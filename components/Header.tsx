@@ -6,6 +6,7 @@ import { HiHome } from "react-icons/hi";
 import { RxCaretLeft, RxCaretRight } from "react-icons/rx";
 import { twMerge } from "tailwind-merge";
 import Button from "./Button";
+import useAuthModal from "@/hooks/useAuth";
 
 interface HeaderProps {
     children: React.ReactNode; 
@@ -14,6 +15,8 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({children, className}) => {
     const router = useRouter();
+    const {onOpen} = useAuthModal();
+
     return (
         <div className={twMerge(`h-fit bg-gradient-to-b from-emerald-800 p-6`, className)}>
             <div className="w-full mb-4 flex items-center justify-between">
@@ -36,10 +39,10 @@ const Header: React.FC<HeaderProps> = ({children, className}) => {
                 <div className="flex justify-between items-center gap-x-4">
                     <>
                         <div>
-                            <Button className="bg-transparent text-neutral-300 font-medium" onClick={() => {}}>Sign up</Button>
+                            <Button className="bg-transparent text-neutral-300 font-medium" onClick={onOpen}>Sign up</Button>
                         </div>
                         <div>
-                            <Button className="bg-white px-6 py-2" onClick={() => {}}>Log in</Button>
+                            <Button className="bg-white px-6 py-2" onClick={onOpen}>Log in</Button>
                         </div>
                     </>
                 </div>
