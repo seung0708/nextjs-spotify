@@ -238,22 +238,28 @@ export type Database = {
         Row: {
           avatar_url: string | null
           billing_address: Json | null
+          first_name: string
           full_name: string | null
           id: string
+          last_name: string
           payment_method: Json | null
         }
         Insert: {
           avatar_url?: string | null
           billing_address?: Json | null
+          first_name: string
           full_name?: string | null
           id: string
+          last_name: string
           payment_method?: Json | null
         }
         Update: {
           avatar_url?: string | null
           billing_address?: Json | null
+          first_name?: string
           full_name?: string | null
           id?: string
+          last_name?: string
           payment_method?: Json | null
         }
         Relationships: []

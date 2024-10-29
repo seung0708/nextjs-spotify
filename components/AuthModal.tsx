@@ -7,9 +7,10 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import useAuthModal from "@/hooks/useAuth";
 import { useEffect } from "react";
+import { Database } from "@/types_db";
 
 const AuthModal = () => {
-    const supabaseClient = useSupabaseClient();
+    const supabaseClient = useSupabaseClient<Database>();
     const router = useRouter();
     const {session} = useSessionContext();
     const {onClose, isOpen} = useAuthModal();
@@ -44,7 +45,9 @@ const AuthModal = () => {
                             }
                         }
                     }
-                }}/>
+                }}
+                onSignup={data => console.log(data)}
+                />
         </Modal>
     )
 }

@@ -1,7 +1,7 @@
 import { User } from "@supabase/auth-helpers-nextjs";
 import { useSessionContext, useUser as useSupaUser } from "@supabase/auth-helpers-react";
 
-import { Subscription, UserDetails } from "@/types";
+import { UserDetails, Subscription } from "@/types";
 import { createContext, useContext, useEffect, useState } from "react";
 
 type UserContextType = {
@@ -18,24 +18,6 @@ export interface Props {
   [propName: string]: any;
 }
 
-function isSubscription(data: any): data is Subscription {
-  return (
-      data &&
-      typeof data === 'object' &&
-      'id' in data &&
-      typeof data.id === 'string' &&
-      'user_id' in data &&
-      typeof data.user_id === 'string' &&
-      'created' in data &&
-      typeof data.created === 'string' &&
-      'current_period_start' in data &&
-      typeof data.current_period_start === 'string' &&
-      'current_period_end' in data &&
-      typeof data.current_period_end === 'string'
-  );
-}
-
-
 export const MyUserContextProvider = (props: Props) => {
   const { session, isLoading: isLoadingUser, supabaseClient: supabase } = useSessionContext();
   const user = useSupaUser();
@@ -44,9 +26,24 @@ export const MyUserContextProvider = (props: Props) => {
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
 
-  const getUserDetails = () => supabase.from("users").select("*").single();
-  const getSubscription = () =>
-    supabase.from("subscriptions").select("*, prices(*, products(*))").in("status", ["trialing", "active"]).single();
+  const getUserDetails = async () => {
+    const {data, error } = await supabase.from("users").select("*").single();
+    if(error) {
+      console.log('Error fetching user details ', error);
+    }
+
+    return data;
+
+  }
+  const getSubscription = async () => {
+    const {data, error} = await supabase.from("subscriptions").select("*, prices(*, products(*))").in("status", ["trialing", "active"]).single();
+    if (error) {
+      console.log('Error fetching subsription details', error); 
+    }
+
+    return data;
+  }
+    
 
   useEffect(() => {
     if (user && !isLoadingData && !userDetails && !subscription) {
@@ -56,38 +53,18 @@ export const MyUserContextProvider = (props: Props) => {
         const userDetailsPromise = result[0];
         const subscriptionPromise = result[1];
 
-
-        if (userDetailsPromise.status === "fulfilled" && userDetailsPromise.value && 'data' in userDetailsPromise.value) {
-          const data = userDetailsPromise.value.data;
-          
-          // Type assertion with additional checks
-          if (data && typeof data === 'object' && 'id' in data && 'first_name' in data && 'last_name' in data) {
-            setUserDetails(data as UserDetails);
-          } else {
-            console.error("UserDetails format is incorrect:", data);
-            setUserDetails(null); // Handle as per your logic
-          }
-        } else {
-          console.error("Failed to fetch user details:", userDetailsPromise);
+        if (userDetailsPromise.status === "fulfilled") {
+          const userDetailsData = userDetailsPromise.value as UserDetails | null
+          console.log(userDetailsData)
+          setUserDetails(userDetailsData);
         }
-
-        if (subscriptionPromise.status === "fulfilled" && subscriptionPromise.value && 'data' in subscriptionPromise.value) {
-          const data = subscriptionPromise.value.data;
-          
-          // Type check with the custom isSubscription guard
-          if (isSubscription(data)) {
-            setSubscription(data);
-          } else {
-            console.error("Subscription format is incorrect:", data);
-            setSubscription(null); // Handle as per your logic
-          }
-        } else {
-          console.error("Failed to fetch subscription details:", subscriptionPromise);
+        if (subscriptionPromise.status === "fulfilled") {
+          const subscriptionData = subscriptionPromise.value as Subscription | null;
+          console.log(subscriptionData)
+          setSubscription(subscriptionData);
         }
-        
         setIsLoadingData(false);
       });
-      
     } else if (!user && !isLoadingUser && !isLoadingData) {
       setUserDetails(null);
       setSubscription(null);
@@ -112,4 +89,3 @@ export const useUser = () => {
   }
   return context;
 };
-
